@@ -142,21 +142,29 @@
       challengeList.textContent = list.join('\n');
     }
 
-    function deleteChallenge() {
-      const selectedChallenge = challengeSelect.value;
-      const index = challenges.indexOf(selectedChallenge);
-      if (index > -1) {
-        challenges.splice(index, 1);
-        delete progress[selectedChallenge];
-        delete personalBest[selectedChallenge];
-        delete timestamps[selectedChallenge];
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
         localStorage.setItem('challenges', JSON.stringify(challenges));
-        localStorage.setItem('progress', JSON.stringify(progress));
-        localStorage.setItem('personalBest', JSON.stringify(personalBest));
-        localStorage.setItem('timestamps', JSON.stringify(timestamps));
         updateDropdown();
         updateChallengeList();
-        showNotification(`Challenge '${selectedChallenge}' deleted.`);
+        showNotification(`Challenge '${newChallenge}' added.`);
+      }
+    }
+
+    function updateProgress() {
+      const selectedChallenge = challengeSelect.value;
+      const value = parseInt(document.getElementById('progressInput').value, 10);
+      if (value >= 1 && value <= 9999) {
+        progress[selectedChallenge] = value;
+        if (!personalBest[selectedChallenge] || value > personalBest[selectedChallenge]) {
+          personalBest[selectedChallenge] = value;
+        }
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('personalBest', JSON.stringify(personalBest));
+        updateChallengeList();
+        showNotification(`Progress updated for '${selectedChallenge}' to ${value}.`);
       }
     }
 
