@@ -95,9 +95,16 @@
   <button onclick="resetPersonalBest()">Reset all Best Values</button>
 
   <script>
-    // Store data in LocalStorage
+    // Default challenges
     const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
-    const challenges = JSON.parse(localStorage.getItem('challenges')) || defaultChallenges;
+
+    // Load data from LocalStorage or initialize with defaults
+    let challenges = JSON.parse(localStorage.getItem('challenges')) || [];
+    if (challenges.length === 0) {
+      challenges = defaultChallenges;
+      localStorage.setItem('challenges', JSON.stringify(challenges));
+    }
+
     const progress = JSON.parse(localStorage.getItem('progress')) || {};
     const personalBest = JSON.parse(localStorage.getItem('personalBest')) || {};
     const timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
