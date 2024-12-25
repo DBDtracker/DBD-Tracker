@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DBD Challenge Tracker</title>
+  <title>DBD Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -48,27 +48,29 @@
   </style>
 </head>
 <body>
-  <h1>DBD Challenge Tracker</h1>
+  <h1>DBD Tracker</h1>
   <h2>Made by sleepingalot</h2>
+  <p style="text-align: center; font-size: 14px;">A simple Website to keep Track of your DBD Challenges Streaks. No login necessary.<br>
+  For Feedback or Ideas add "sleepingalot" on Discord or Steam!</p>
 
-  <!-- Dropdown for Challenges -->
-  <label for="challengeSelect">Select a Challenge:</label>
+  <!-- Dropdown for Challenges / Streaks -->
+  <label for="challengeSelect">Select a Challenge / Streak:</label>
   <select id="challengeSelect"></select>
 
   <!-- Enter Progress -->
   <label for="progressInput">Progress:</label>
   <input id="progressInput" type="number" min="1" max="9999" />
   <button onclick="updateProgress()">Save</button>
-  <button onclick="deleteChallenge()">Delete Challenge</button>
+  <button onclick="deleteChallenge()">Delete Challenge / Streak</button>
 
-  <!-- Add New Challenge -->
-  <h2>Add New Challenge</h2>
+  <!-- Add New Challenge / Streak -->
+  <h2>Add New Challenge / Streak</h2>
   <label for="newChallenge">Name:</label>
   <input id="newChallenge" type="text" />
   <button onclick="addChallenge()">Add</button>
 
-  <!-- Sorted Challenge List -->
-  <h2>Challenge List</h2>
+  <!-- Sorted Challenge / Streak List -->
+  <h2>Challenge / Streak List</h2>
   <button onclick="sortByName()">Sort by Name</button>
   <button onclick="sortByProgress()">Sort by Progress</button>
   <button onclick="sortByRecent()">Sort by Recent</button>
@@ -76,7 +78,7 @@
 
   <script>
     // Store data in LocalStorage
-    const defaultChallenges = ['Challenge 1', 'Challenge 2', 'Challenge 3'];
+    const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
     const challenges = JSON.parse(localStorage.getItem('challenges')) || defaultChallenges;
     const progress = JSON.parse(localStorage.getItem('progress')) || {};
     const timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
