@@ -77,22 +77,22 @@
   <!-- Enter Progress -->
   <label for="progressInput">Progress:</label>
   <input id="progressInput" type="number" min="1" max="9999" />
-  <button onclick="delayedAction(updateProgress)">💾 Save</button>
-  <button onclick="delayedAction(deleteChallenge)">🗑️ Delete Challenge / Streak</button>
+  <button onclick="delayedAction(updateProgress)">Save</button>
+  <button onclick="delayedAction(deleteChallenge)">Delete Challenge / Streak</button>
 
   <!-- Add New Challenge / Streak -->
   <h2>Add New Challenge / Streak</h2>
   <label for="newChallenge">Name:</label>
   <input id="newChallenge" type="text" />
-  <button onclick="delayedAction(addChallenge)">➕ Add</button>
+  <button onclick="delayedAction(addChallenge)">Add</button>
 
   <!-- Sorted Challenge / Streak List -->
   <h2>Challenge / Streak List</h2>
-  <button onclick="delayedAction(sortByName)">🔤 Sort by Name</button>
-  <button onclick="delayedAction(sortByProgress)">📊 Sort by Progress</button>
-  <button onclick="delayedAction(sortByRecent)">⏱️ Sort by Recent</button>
+  <button onclick="delayedAction(sortByName)">Sort by Name</button>
+  <button onclick="delayedAction(sortByProgress)">Sort by Progress</button>
+  <button onclick="delayedAction(sortByRecent)">Sort by Recent</button>
   <pre id="challengeList"></pre>
-  <button onclick="delayedAction(resetPersonalBest)">🔄 Reset all Best Values</button>
+  <button onclick="delayedAction(resetPersonalBest)">Reset all Best Values</button>
 
   <script>
     // Default challenges
