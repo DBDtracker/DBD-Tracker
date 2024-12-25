@@ -5,24 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DBD Tracker</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #1c1c1c;
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1a1a1a, #333333);
       color: #ffffff;
     }
     h1 {
       text-align: center;
+      font-weight: 600;
+      color: #ff4444;
     }
     h2 {
       text-align: center;
+      color: #ffffff;
     }
     label, input, select, button {
       margin: 10px 0;
       color: #ffffff;
-      background-color: #333333;
-      border: 1px solid #555555;
-      padding: 5px;
+      background-color: #222222;
+      border: 1px solid #ff4444;
+      padding: 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background-color: #ff4444;
+      color: #ffffff;
+      box-shadow: 0 0 10px #ff4444;
     }
     table {
       width: 100%;
@@ -36,14 +49,12 @@
       text-align: center;
     }
     pre {
-      border: 1px solid #555555;
+      border: 1px solid #ff4444;
       padding: 10px;
-      background-color: #333333;
+      background-color: #222222;
       color: #ffffff;
       white-space: pre-wrap;
-    }
-    button:hover {
-      background-color: #444444;
+      border-radius: 5px;
     }
     .notification {
       text-align: center;
@@ -66,22 +77,22 @@
   <!-- Enter Progress -->
   <label for="progressInput">Progress:</label>
   <input id="progressInput" type="number" min="1" max="9999" />
-  <button onclick="delayedAction(updateProgress)">Save</button>
-  <button onclick="delayedAction(deleteChallenge)">Delete Challenge / Streak</button>
+  <button onclick="delayedAction(updateProgress)">💾 Save</button>
+  <button onclick="delayedAction(deleteChallenge)">🗑️ Delete Challenge / Streak</button>
 
   <!-- Add New Challenge / Streak -->
   <h2>Add New Challenge / Streak</h2>
   <label for="newChallenge">Name:</label>
   <input id="newChallenge" type="text" />
-  <button onclick="delayedAction(addChallenge)">Add</button>
+  <button onclick="delayedAction(addChallenge)">➕ Add</button>
 
   <!-- Sorted Challenge / Streak List -->
   <h2>Challenge / Streak List</h2>
-  <button onclick="delayedAction(sortByName)">Sort by Name</button>
-  <button onclick="delayedAction(sortByProgress)">Sort by Progress</button>
-  <button onclick="delayedAction(sortByRecent)">Sort by Recent</button>
+  <button onclick="delayedAction(sortByName)">🔤 Sort by Name</button>
+  <button onclick="delayedAction(sortByProgress)">📊 Sort by Progress</button>
+  <button onclick="delayedAction(sortByRecent)">⏱️ Sort by Recent</button>
   <pre id="challengeList"></pre>
-  <button onclick="delayedAction(resetPersonalBest)">Reset all Best Values</button>
+  <button onclick="delayedAction(resetPersonalBest)">🔄 Reset all Best Values</button>
 
   <script>
     // Default challenges
@@ -125,66 +136,6 @@
           : `${challenge}: ${progressValue}`;
       });
       challengeList.textContent = list.join('\n');
-    }
-
-    function addChallenge() {
-      const newChallenge = document.getElementById('newChallenge').value.trim();
-      if (newChallenge && !challenges.includes(newChallenge)) {
-        challenges.push(newChallenge);
-        localStorage.setItem('challenges', JSON.stringify(challenges));
-        updateDropdown();
-        updateChallengeList();
-        showNotification('Challenge added successfully!');
-      }
-    }
-
-    function updateProgress() {
-      const challenge = challengeSelect.value;
-      const value = parseInt(document.getElementById('progressInput').value, 10);
-      if (value >= 1 && value <= 9999) {
-        progress[challenge] = value;
-        personalBest[challenge] = Math.max(personalBest[challenge] || 0, value);
-        timestamps[challenge] = Date.now();
-        localStorage.setItem('progress', JSON.stringify(progress));
-        localStorage.setItem('personalBest', JSON.stringify(personalBest));
-        localStorage.setItem('timestamps', JSON.stringify(timestamps));
-        updateChallengeList();
-        showNotification('Progress updated successfully!');
-      }
-    }
-
-    function deleteChallenge() {
-      const challenge = challengeSelect.value;
-      challenges = challenges.filter(c => c !== challenge);
-      delete progress[challenge];
-      delete personalBest[challenge];
-      delete timestamps[challenge];
-      localStorage.setItem('challenges', JSON.stringify(challenges));
-      updateDropdown();
-      updateChallengeList();
-      showNotification('Challenge deleted successfully!');
-    }
-
-    function sortByName() {
-      challenges.sort();
-      updateChallengeList();
-    }
-
-    function sortByProgress() {
-      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
-      updateChallengeList();
-    }
-
-    function sortByRecent() {
-      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
-      updateChallengeList();
-    }
-
-    function resetPersonalBest() {
-      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
-      localStorage.setItem('personalBest', JSON.stringify(personalBest));
-      updateChallengeList();
-      showNotification('All Best Values reset!');
     }
 
     updateDropdown();
