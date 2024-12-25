@@ -132,6 +132,109 @@
     <span class="tooltiptext">Reset all best values to 0</span>
   </button>
 
+  <script>
+    const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
+    let challenges = JSON.parse(localStorage.getItem('challenges')) || [...defaultChallenges];
+    let progress = JSON.parse(localStorage.getItem('progress')) || {};
+    let personalBest = JSON.parse(localStorage.getItem('personalBest')) || {};
+    let timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
+
+    const challengeSelect = document.getElementById('challengeSelect');
+    const challengeList = document.getElementById('challengeList');
+    const notification = document.getElementById('notification');
+
+    function showNotification(message) {
+      notification.textContent = message;
+      setTimeout(() => notification.textContent = '', 3000);
+    }
+
+    function delayedAction(action) {
+      setTimeout(action, 500);
+    }
+
+    function updateDropdown() {
+      if (challenges.length === 0) {
+        challenges = [...defaultChallenges];
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        showNotification('Default challenges restored!');
+      }
+      challengeSelect.innerHTML = '';
+      challenges.forEach(challenge => {
+        const option = document.createElement('option');
+        option.value = challenge;
+        option.textContent = challenge;
+        challengeSelect.appendChild(option);
+      });
+    }
+
+    function updateChallengeList() {
+      const list = challenges.map(challenge => `${challenge}: ${progress[challenge] || 0}${personalBest[challenge] ? ` (Best: ${personalBest[challenge]})` : ''}`);
+      challengeList.textContent = list.join('\n');
+    }
+
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
+        updateDropdown();
+        updateChallengeList();
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        showNotification('Challenge added!');
+      }
+    }
+
+    function updateProgress() {
+      const challenge = challengeSelect.value;
+      const value = parseInt(document.getElementById('progressInput').value, 10);
+      if (value >= 1 && value <= 9999) {
+        progress[challenge] = value;
+        personalBest[challenge] = Math.max(personalBest[challenge] || 0, value);
+        timestamps[challenge] = Date.now();
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('personalBest', JSON.stringify(personalBest));
+        updateChallengeList();
+        showNotification('Progress saved!');
+      }
+    }
+
+    function deleteChallenge() {
+      const challenge = challengeSelect.value;
+      challenges = challenges.filter(c => c !== challenge);
+      delete progress[challenge];
+      delete personalBest[challenge];
+      delete timestamps[challenge];
+      localStorage.setItem('challenges', JSON.stringify(challenges));
+      updateDropdown();
+      updateChallengeList();
+      showNotification('Challenge deleted!');
+    }
+
+    function sortByName() {
+      challenges.sort();
+      updateChallengeList();
+    }
+
+    function sortByProgress() {
+      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
+      updateChallengeList();
+    }
+
+    function sortByRecent() {
+      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
+      updateChallengeList();
+    }
+
+    function resetPersonalBest() {
+      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
+      localStorage.setItem('personalBest', JSON.stringify(personalBest));
+      updateChallengeList();
+      showNotification('Best values reset!');
+    }
+
+    updateDropdown();
+    updateChallengeList();
+  </script>
+
   <h2 style="text-align: center; margin-top: 20px;">Made by sleepingalot</h2>
   <p style="text-align: center; font-size: 12px; margin-top: 50px;">Note: Data may be lost when clearing cache or browser history. Using private/incognito mode or switching browsers may not retain data. It is recommended to regularly export your data—just to be safe!</p>
 </body>
