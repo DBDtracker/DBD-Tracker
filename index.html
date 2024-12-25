@@ -118,42 +118,28 @@
       setTimeout(() => notification.textContent = '', 3000);
     }
 
-    function exportData() {
-      const data = {
-        challenges,
-        progress,
-        personalBest,
-        timestamps
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "dbd_tracker_data.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      document.body.removeChild(downloadAnchor);
-      showNotification('Data exported successfully!');
+    function updateDropdown() {
+      challengeSelect.innerHTML = '';
+      challenges.forEach((challenge) => {
+        const option = document.createElement('option');
+        option.value = challenge;
+        option.textContent = challenge;
+        challengeSelect.appendChild(option);
+      });
+      if (challengeSelect.options.length > 0) {
+        challengeSelect.selectedIndex = 0;
+      }
     }
 
-    function importData() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'application/json';
-      input.onchange = (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const importedData = JSON.parse(event.target.result);
-          localStorage.setItem('challenges', JSON.stringify(importedData.challenges));
-          localStorage.setItem('progress', JSON.stringify(importedData.progress));
-          localStorage.setItem('personalBest', JSON.stringify(importedData.personalBest));
-          localStorage.setItem('timestamps', JSON.stringify(importedData.timestamps));
-          window.location.reload();
-        };
-        reader.readAsText(file);
-      };
-      input.click();
-      showNotification('Data imported successfully!');
+    function updateChallengeList() {
+      const list = challenges.map(challenge => {
+        const progressValue = progress[challenge] || 0;
+        const bestValue = personalBest[challenge] || 0;
+        return progressValue > 0
+          ? `${challenge}: ${progressValue}${bestValue > 0 ? ` (Best: ${bestValue})` : ''}`
+          : `${challenge}: ${progressValue}`;
+      });
+      challengeList.textContent = list.join('\n');
     }
 
     updateDropdown();
