@@ -45,12 +45,19 @@
     button:hover {
       background-color: #444444;
     }
+    .notification {
+      text-align: center;
+      margin: 10px 0;
+      color: #00ff00;
+    }
   </style>
 </head>
 <body>
   <h1>DBD Tracker</h1>
-  <p style="text-align: center; font-size: 14px;">A simple Website to keep Track of your DBD Challenges Streaks. No login necessary. Stats saved in your Browser's Local Storage<br>
-  For Feedback or Ideas add "sleepingalot" on Discord or Steam!</p>
+  <p style="text-align: center; font-size: 14px;">A simple Website to keep Track of your DBD Challenges/Streaks. No login necessary. Stats saved in your Browser's Local Storage<br>
+  For feedback or ideas add "sleepingalot" on Discord or Steam!</p>
+
+  <div id="notification" class="notification"></div>
 
   <!-- Dropdown for Challenges / Streaks -->
   <label for="challengeSelect">Select a Challenge / Streak:</label>
@@ -84,6 +91,12 @@
 
     const challengeSelect = document.getElementById('challengeSelect');
     const challengeList = document.getElementById('challengeList');
+    const notification = document.getElementById('notification');
+
+    function showNotification(message) {
+      notification.textContent = message;
+      setTimeout(() => notification.textContent = '', 3000);
+    }
 
     // Update dropdown
     function updateDropdown() {
@@ -115,8 +128,23 @@
         localStorage.setItem('progress', JSON.stringify(progress));
         localStorage.setItem('timestamps', JSON.stringify(timestamps));
         updateChallengeList();
+        showNotification(`Progress for '${selectedChallenge}' updated to ${value}.`);
       } else {
         alert('Please enter a number between 1 and 9999.');
+      }
+    }
+
+    // Add new challenge
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        updateDropdown();
+        updateChallengeList();
+        showNotification(`Challenge '${newChallenge}' added.`);
+      } else {
+        alert('Challenge already exists or is empty!');
       }
     }
 
@@ -133,26 +161,10 @@
         localStorage.setItem('timestamps', JSON.stringify(timestamps));
         updateDropdown();
         updateChallengeList();
+        showNotification(`Challenge '${selectedChallenge}' deleted.`);
       }
     }
 
-    // Sorting functions
-    function sortByName() {
-      challenges.sort();
-      updateChallengeList();
-    }
-
-    function sortByProgress() {
-      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
-      updateChallengeList();
-    }
-
-    function sortByRecent() {
-      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
-      updateChallengeList();
-    }
-
-    // Initialization
     updateDropdown();
     updateChallengeList();
   </script>
