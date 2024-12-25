@@ -37,17 +37,6 @@
       color: #ffffff;
       box-shadow: 0 0 10px #ff4444;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    table, th, td {
-      border: 1px solid #555555;
-    }
-    th, td {
-      padding: 10px;
-      text-align: center;
-    }
     pre {
       border: 1px solid #ff4444;
       padding: 10px;
@@ -141,6 +130,65 @@
           : `${challenge}: ${progressValue}`;
       });
       challengeList.textContent = list.join('\n');
+    }
+
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
+        updateDropdown();
+        updateChallengeList();
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        showNotification('Challenge added successfully!');
+      }
+    }
+
+    function updateProgress() {
+      const challenge = challengeSelect.value;
+      const value = parseInt(document.getElementById('progressInput').value, 10);
+      if (value >= 1 && value <= 9999) {
+        progress[challenge] = value;
+        personalBest[challenge] = Math.max(personalBest[challenge] || 0, value);
+        timestamps[challenge] = Date.now();
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('personalBest', JSON.stringify(personalBest));
+        updateChallengeList();
+        showNotification('Progress updated successfully!');
+      }
+    }
+
+    function deleteChallenge() {
+      const challenge = challengeSelect.value;
+      challenges = challenges.filter(c => c !== challenge);
+      delete progress[challenge];
+      delete personalBest[challenge];
+      delete timestamps[challenge];
+      updateDropdown();
+      updateChallengeList();
+      localStorage.setItem('challenges', JSON.stringify(challenges));
+      showNotification('Challenge deleted successfully!');
+    }
+
+    function sortByName() {
+      challenges.sort();
+      updateChallengeList();
+    }
+
+    function sortByProgress() {
+      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
+      updateChallengeList();
+    }
+
+    function sortByRecent() {
+      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
+      updateChallengeList();
+    }
+
+    function resetPersonalBest() {
+      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
+      localStorage.setItem('personalBest', JSON.stringify(personalBest));
+      updateChallengeList();
+      showNotification('All Best Values reset!');
     }
 
     updateDropdown();
