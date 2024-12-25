@@ -59,6 +59,7 @@
   <label for="progressInput">Progress:</label>
   <input id="progressInput" type="number" min="1" max="9999" />
   <button onclick="updateProgress()">Save</button>
+  <button onclick="deleteChallenge()">Delete Challenge</button>
 
   <!-- Add New Challenge -->
   <h2>Add New Challenge</h2>
@@ -81,7 +82,6 @@
     const timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
 
     const challengeSelect = document.getElementById('challengeSelect');
-    const resultTable = document.getElementById('resultTable').querySelector('tbody');
     const challengeList = document.getElementById('challengeList');
 
     // Update dropdown
@@ -93,20 +93,9 @@
         option.textContent = challenge;
         challengeSelect.appendChild(option);
       });
-    }
-
-    // Update table
-    function updateTable() {
-      resultTable.innerHTML = '';
-      challenges.forEach((challenge) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${challenge}</td>
-          <td>${progress[challenge] || 0}</td>
-        `;
-        resultTable.appendChild(row);
-      });
-      updateChallengeList();
+      if (challengeSelect.options.length > 0) {
+        challengeSelect.selectedIndex = 0;
+      }
     }
 
     // Update challenge list
@@ -124,44 +113,47 @@
         timestamps[selectedChallenge] = Date.now();
         localStorage.setItem('progress', JSON.stringify(progress));
         localStorage.setItem('timestamps', JSON.stringify(timestamps));
-        updateTable();
+        updateChallengeList();
       } else {
         alert('Please enter a number between 1 and 9999.');
       }
     }
 
-    // Add new challenge
-    function addChallenge() {
-      const newChallenge = document.getElementById('newChallenge').value.trim();
-      if (newChallenge && !challenges.includes(newChallenge)) {
-        challenges.push(newChallenge);
+    // Delete selected challenge
+    function deleteChallenge() {
+      const selectedChallenge = challengeSelect.value;
+      const index = challenges.indexOf(selectedChallenge);
+      if (index > -1) {
+        challenges.splice(index, 1);
+        delete progress[selectedChallenge];
+        delete timestamps[selectedChallenge];
         localStorage.setItem('challenges', JSON.stringify(challenges));
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('timestamps', JSON.stringify(timestamps));
         updateDropdown();
-        updateTable();
-      } else {
-        alert('Challenge already exists or is empty!');
+        updateChallengeList();
       }
     }
 
     // Sorting functions
     function sortByName() {
       challenges.sort();
-      updateTable();
+      updateChallengeList();
     }
 
     function sortByProgress() {
       challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
-      updateTable();
+      updateChallengeList();
     }
 
     function sortByRecent() {
       challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
-      updateTable();
+      updateChallengeList();
     }
 
     // Initialization
     updateDropdown();
-    updateTable();
+    updateChallengeList();
   </script>
 </body>
 </html>
