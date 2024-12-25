@@ -1,61 +1,127 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
+let challenges = JSON.parse(localStorage.getItem('challenges')) || [...defaultChallenges];
+let progress = JSON.parse(localStorage.getItem('progress')) || {};
+let personalBest = JSON.parse(localStorage.getItem('personalBest')) || {};
+let timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
 
-body {
-  font-family: 'Montserrat', sans-serif;
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(135deg, #1a1a1a, #333333);
-  color: #ffffff;
-}
-h1 {
-  text-align: center;
-  font-weight: 600;
-  color: #ff4444;
-}
-h2 {
-  text-align: center;
-  color: #ffffff;
-}
-label, input, select, button {
-  margin: 10px 0;
-  color: #ffffff;
-  background-color: #222222;
-  border: 1px solid #ff4444;
-  padding: 10px;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-}
-button:hover {
-  background-color: #ff4444;
-  color: #ffffff;
-  box-shadow: 0 0 10px #ff4444;
-}
-pre {
-  border: 1px solid #999999;
-  padding: 10px;
-  background-color: #222222;
-  color: #ffffff;
-  white-space: pre-wrap;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(169, 169, 169, 0.8);
-  animation: smokeEffect 5s infinite alternate;
+// Benachrichtigung anzeigen
+function showNotification(message) {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  setTimeout(() => notification.textContent = '', 3000);
 }
 
-@keyframes smokeEffect {
-  0% { box-shadow: 0 0 15px rgba(169, 169, 169, 0.6); }
-  50% { box-shadow: 0 0 20px rgba(169, 169, 169, 0.9); }
-  100% { box-shadow: 0 0 15px rgba(169, 169, 169, 0.6); }
+// Verzögerte Aktionen für Feedback
+function delayedAction(action) {
+  setTimeout(action, 500);
 }
 
-.highlighted {
-  background-color: #b8860b;
-  color: #ffffff;
-  padding: 5px;
-  border-radius: 5px;
+// Dropdown aktualisieren
+function updateDropdown() {
+  const challengeSelect = document.getElementById('challengeSelect');
+  challengeSelect.innerHTML = '';
+  challenges.forEach(challenge => {
+    const option = document.createElement('option');
+    option.value = challenge;
+    option.textContent = challenge;
+    challengeSelect.appendChild(option);
+  });
 }
 
-.notification {
-  text-align: center;
-  margin: 10px 0;
-  color: #00ff00;
+// Liste aktualisieren
+function updateChallengeList() {
+  const challengeList = document.getElementById('challengeList');
+  const selectedChallenge = document.getElementById('challengeSelect').value;
+  const list = challenges.map(challenge => {
+    const progressValue = progress[challenge] || 0;
+    const bestValue = personalBest[challenge] || 0;
+    const displayText = `${challenge}: ${progressValue}${bestValue > 0 ? ` (Best: ${bestValue})` : ''}`;
+    return challenge === selectedChallenge ? `<span class='highlighted'>${displayText}</span>` : displayText;
+  });
+  challengeList.innerHTML = list.join('<br>');
 }
+
+// Neue Challenge hinzufügen
+function addChallenge() {
+  const newChallenge = document.getElementById('newChallenge').value.trim();
+  if (newChallenge && !challenges.includes(newChallenge)) {
+    challenges.push(newChallenge);
+    progress[newChallenge] = 0;
+    personalBest[newChallenge] = 0;
+    timestamps[newChallenge] = Date.now();
+    localStorage.setItem('challenges', JSON.stringify(challenges));
+    localStorage.setItem('progress', JSON.stringify(progress));
+    localStorage.setItem('personalBest', JSON.stringify(personalBest));
+    localStorage.setItem('timestamps', JSON.stringify(timestamps));
+    updateDropdown();
+    updateChallengeList();
+    showNotification('Challenge added successfully!');
+  } else {
+    showNotification('Challenge already exists or is invalid!');
+  }
+}
+
+// Fortschritt aktualisieren
+function updateProgress() {
+  const challenge = document.getElementById('challengeSelect').value;
+  const value = parseInt(document.getElementById('progressInput').value, 10);
+  if (value >= 1 && value <= 9999) {
+    progress[challenge] = value;
+    personalBest[challenge] = Math.max(personalBest[challenge] || 0, value);
+    timestamps[challenge] = Date.now();
+    localStorage.setItem('progress', JSON.stringify(progress));
+    localStorage.setItem('personalBest', JSON.stringify(personalBest));
+    localStorage.setItem('timestamps', JSON.stringify(timestamps));
+    updateChallengeList();
+    showNotification('Progress updated successfully!');
+  } else {
+    showNotification('Invalid progress value!');
+  }
+}
+
+// Challenge löschen
+function deleteChallenge() {
+  const challenge = document.getElementById('challengeSelect').value;
+  challenges = challenges.filter(c => c !== challenge);
+  delete progress[challenge];
+  delete personalBest[challenge];
+  delete timestamps[challenge];
+  localStorage.setItem('challenges', JSON.stringify(challenges));
+  localStorage.setItem('progress', JSON.stringify(progress));
+  localStorage.setItem('personalBest', JSON.stringify(personalBest));
+  localStorage.setItem('timestamps', JSON.stringify(timestamps));
+  if (challenges.length === 0) challenges = [...defaultChallenges]; // Standard-Challenges wiederherstellen
+  updateDropdown();
+  updateChallengeList();
+  showNotification('Challenge deleted successfully!');
+}
+
+// Nach Namen sortieren
+function sortByName() {
+  challenges.sort();
+  updateChallengeList();
+}
+
+// Nach Fortschritt sortieren
+function sortByProgress() {
+  challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
+  updateChallengeList();
+}
+
+// Nach zuletzt geändert sortieren
+function sortByRecent() {
+  challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
+  updateChallengeList();
+}
+
+// Alle Bestwerte zurücksetzen
+function resetPersonalBest() {
+  Object.keys(personalBest).forEach(key => personalBest[key] = 0);
+  localStorage.setItem('personalBest', JSON.stringify(personalBest));
+  updateChallengeList();
+  showNotification('All Best Values reset!');
+}
+
+// Dropdown und Liste initialisieren
+updateDropdown();
+updateChallengeList();
