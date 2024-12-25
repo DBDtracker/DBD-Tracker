@@ -81,7 +81,7 @@
   <button onclick="sortByProgress()">Sort by Progress</button>
   <button onclick="sortByRecent()">Sort by Recent</button>
   <pre id="challengeList"></pre>
-  <button onclick="resetPersonalBest()">Reset Personal Best</button>
+  <button onclick="resetPersonalBest()">Reset all Best Values</button>
 
   <script>
     // Store data in LocalStorage
@@ -116,7 +116,13 @@
 
     // Update challenge list
     function updateChallengeList() {
-      const list = challenges.map(challenge => `${challenge}: ${progress[challenge] || 0} (Best: ${personalBest[challenge] || 0})`);
+      const list = challenges.map(challenge => {
+        const progressValue = progress[challenge] || 0;
+        const bestValue = personalBest[challenge] || 0;
+        return progressValue > 0
+          ? `${challenge}: ${progressValue}${bestValue > 0 ? ` (Best: ${bestValue})` : ''}`
+          : `${challenge}: ${progressValue}`;
+      });
       challengeList.textContent = list.join('\n');
     }
 
