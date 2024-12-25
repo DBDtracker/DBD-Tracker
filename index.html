@@ -50,6 +50,11 @@
       margin: 10px 0;
       color: #00ff00;
     }
+    .export-import {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
   </style>
 </head>
 <body>
@@ -58,6 +63,12 @@
   For feedback or ideas add "sleepingalot" on Discord or Steam!</p>
 
   <div id="notification" class="notification"></div>
+
+  <!-- Export/Import Buttons -->
+  <div class="export-import">
+    <button onclick="exportData()">Export Data</button>
+    <button onclick="importData()">Import Data</button>
+  </div>
 
   <!-- Dropdown for Challenges / Streaks -->
   <label for="challengeSelect">Select a Challenge / Streak:</label>
@@ -100,57 +111,42 @@
       setTimeout(() => notification.textContent = '', 3000);
     }
 
-    // Update dropdown
-    function updateDropdown() {
-      challengeSelect.innerHTML = '';
-      challenges.forEach((challenge) => {
-        const option = document.createElement('option');
-        option.value = challenge;
-        option.textContent = challenge;
-        challengeSelect.appendChild(option);
-      });
-      if (challengeSelect.options.length > 0) {
-        challengeSelect.selectedIndex = 0;
-      }
+    function exportData() {
+      const data = {
+        challenges,
+        progress,
+        personalBest,
+        timestamps
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "dbd_tracker_data.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      showNotification('Data exported successfully!');
     }
 
-    // Update challenge list
-    function updateChallengeList() {
-      const list = challenges.map(challenge => {
-        const progressValue = progress[challenge] || 0;
-        const bestValue = personalBest[challenge] || 0;
-        return progressValue > 0
-          ? `${challenge}: ${progressValue}${bestValue > 0 ? ` (Best: ${bestValue})` : ''}`
-          : `${challenge}: ${progressValue}`;
-      });
-      challengeList.textContent = list.join('\n');
-    }
-
-    // Save progress
-    function updateProgress() {
-      const selectedChallenge = challengeSelect.value;
-      const value = parseInt(document.getElementById('progressInput').value, 10);
-      if (value >= 1 && value <= 9999) {
-        progress[selectedChallenge] = value;
-        if (!personalBest[selectedChallenge] || value > personalBest[selectedChallenge]) {
-          personalBest[selectedChallenge] = value;
-        }
-        timestamps[selectedChallenge] = Date.now();
-        localStorage.setItem('progress', JSON.stringify(progress));
-        localStorage.setItem('personalBest', JSON.stringify(personalBest));
-        localStorage.setItem('timestamps', JSON.stringify(timestamps));
-        updateChallengeList();
-        showNotification(`Progress for '${selectedChallenge}' updated to ${value}.`);
-      } else {
-        alert('Please enter a number between 1 and 9999.');
-      }
-    }
-
-    function resetPersonalBest() {
-      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
-      localStorage.setItem('personalBest', JSON.stringify(personalBest));
-      updateChallengeList();
-      showNotification('All personal best values have been reset.');
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const importedData = JSON.parse(event.target.result);
+          localStorage.setItem('challenges', JSON.stringify(importedData.challenges));
+          localStorage.setItem('progress', JSON.stringify(importedData.progress));
+          localStorage.setItem('personalBest', JSON.stringify(importedData.personalBest));
+          localStorage.setItem('timestamps', JSON.stringify(importedData.timestamps));
+          window.location.reload();
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+      showNotification('Data imported successfully!');
     }
 
     updateDropdown();
@@ -158,5 +154,6 @@
   </script>
 
   <h2 style="text-align: center; margin-top: 20px;">Made by sleepingalot</h2>
+  <p style="text-align: center; font-size: 12px; margin-top: 50px;">Note: Data may be lost when clearing cache or browser history. Using private/incognito mode or switching browsers may not retain data. It is recommended to regularly export your data—just to be safe!</p>
 </body>
 </html>
