@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DBD Challenge Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #1c1c1c;
+      color: #ffffff;
+    }
+    h1 {
+      text-align: center;
+    }
+    h2 {
+      text-align: center;
+    }
+    label, input, select, button {
+      margin: 10px 0;
+      color: #ffffff;
+      background-color: #333333;
+      border: 1px solid #555555;
+      padding: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #555555;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    pre {
+      border: 1px solid #555555;
+      padding: 10px;
+      background-color: #333333;
+      color: #ffffff;
+      white-space: pre-wrap;
+    }
+    button:hover {
+      background-color: #444444;
+    }
+  </style>
+</head>
+<body>
+  <h1>DBD Challenge Tracker</h1>
+  <h2>Made by sleepingalot</h2>
+
+  <!-- Dropdown for Challenges -->
+  <label for="challengeSelect">Select a Challenge:</label>
+  <select id="challengeSelect"></select>
+
+  <!-- Enter Progress -->
+  <label for="progressInput">Progress:</label>
+  <input id="progressInput" type="number" min="1" max="9999" />
+  <button onclick="updateProgress()">Save</button>
+
+  <!-- Add New Challenge -->
+  <h2>Add New Challenge</h2>
+  <label for="newChallenge">Name:</label>
+  <input id="newChallenge" type="text" />
+  <button onclick="addChallenge()">Add</button>
+
+  <!-- Sorted Challenge List -->
+  <h2>Challenge List</h2>
+  <button onclick="sortByName()">Sort by Name</button>
+  <button onclick="sortByProgress()">Sort by Progress</button>
+  <button onclick="sortByRecent()">Sort by Recent</button>
+  <pre id="challengeList"></pre>
+
+  <script>
+    // Store data in LocalStorage
+    const defaultChallenges = ['Challenge 1', 'Challenge 2', 'Challenge 3'];
+    const challenges = JSON.parse(localStorage.getItem('challenges')) || defaultChallenges;
+    const progress = JSON.parse(localStorage.getItem('progress')) || {};
+    const timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
+
+    const challengeSelect = document.getElementById('challengeSelect');
+    const resultTable = document.getElementById('resultTable').querySelector('tbody');
+    const challengeList = document.getElementById('challengeList');
+
+    // Update dropdown
+    function updateDropdown() {
+      challengeSelect.innerHTML = '';
+      challenges.forEach((challenge) => {
+        const option = document.createElement('option');
+        option.value = challenge;
+        option.textContent = challenge;
+        challengeSelect.appendChild(option);
+      });
+    }
+
+    // Update table
+    function updateTable() {
+      resultTable.innerHTML = '';
+      challenges.forEach((challenge) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${challenge}</td>
+          <td>${progress[challenge] || 0}</td>
+        `;
+        resultTable.appendChild(row);
+      });
+      updateChallengeList();
+    }
+
+    // Update challenge list
+    function updateChallengeList() {
+      const list = challenges.map(challenge => `${challenge}: ${progress[challenge] || 0}`);
+      challengeList.textContent = list.join('\n');
+    }
+
+    // Save progress
+    function updateProgress() {
+      const selectedChallenge = challengeSelect.value;
+      const value = document.getElementById('progressInput').value;
+      if (value >= 1 && value <= 9999) {
+        progress[selectedChallenge] = value;
+        timestamps[selectedChallenge] = Date.now();
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('timestamps', JSON.stringify(timestamps));
+        updateTable();
+      } else {
+        alert('Please enter a number between 1 and 9999.');
+      }
+    }
+
+    // Add new challenge
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        updateDropdown();
+        updateTable();
+      } else {
+        alert('Challenge already exists or is empty!');
+      }
+    }
+
+    // Sorting functions
+    function sortByName() {
+      challenges.sort();
+      updateTable();
+    }
+
+    function sortByProgress() {
+      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
+      updateTable();
+    }
+
+    function sortByRecent() {
+      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
+      updateTable();
+    }
+
+    // Initialization
+    updateDropdown();
+    updateTable();
+  </script>
+</body>
+</html>
