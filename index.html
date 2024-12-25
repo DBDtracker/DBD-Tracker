@@ -4,111 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DBD Tracker</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
-
-    body {
-      font-family: 'Montserrat', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #1a1a1a, #333333);
-      color: #ffffff;
-    }
-    h1 {
-      text-align: center;
-      font-weight: 600;
-      color: #ff4444;
-    }
-    h2 {
-      text-align: center;
-      color: #ffffff;
-    }
-    label, input, select, button {
-      margin: 10px 0;
-      color: #ffffff;
-      background-color: #222222;
-      border: 1px solid #ff4444;
-      padding: 10px;
-      border-radius: 5px;
-      transition: all 0.3s ease;
-    }
-    button:hover {
-      background-color: #ff4444;
-      color: #ffffff;
-      box-shadow: 0 0 10px #ff4444;
-    }
-    pre {
-      border: 1px solid #999999;
-      padding: 10px;
-      background-color: #222222;
-      color: #ffffff;
-      white-space: pre-wrap;
-      border-radius: 5px;
-      box-shadow: 0 0 15px rgba(169, 169, 169, 0.8);
-      animation: smokeEffect 5s infinite alternate;
-    }
-
-    @keyframes smokeEffect {
-      0% { box-shadow: 0 0 15px rgba(169, 169, 169, 0.6); }
-      50% { box-shadow: 0 0 20px rgba(169, 169, 169, 0.9); }
-      100% { box-shadow: 0 0 15px rgba(169, 169, 169, 0.6); }
-    }
-
-    .highlighted {
-      background-color: #b8860b;
-      color: #ffffff;
-      padding: 5px;
-      border-radius: 5px;
-    }
-
-    .notification {
-      text-align: center;
-      margin: 10px 0;
-      color: #00ff00;
-    }
-
-    .tooltip {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-    }
-
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 200px;
-      background-color: #222;
-      color: #fff;
-      text-align: center;
-      padding: 5px;
-      border-radius: 5px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%;
-      left: 50%;
-      margin-left: -100px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    button {
-      transition: transform 0.2s;
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>DBD Tracker</h1>
-  <p style="text-align: center; font-size: 14px;">A simple Website to keep Track of your DBD Challenges/Streaks. No login necessary. Stats saved in your Browser's Local Storage<br>
-  For feedback or ideas add "sleepingalot" on Discord or Steam!</p>
+  <p style="text-align: center; font-size: 14px;">
+    A simple Website to keep Track of your DBD Challenges/Streaks. No login necessary. Stats saved in your Browser's Local Storage<br>
+    For feedback or ideas add "sleepingalot" on Discord or Steam!
+  </p>
 
   <div id="notification" class="notification"></div>
 
@@ -159,53 +62,6 @@
   <h2 style="text-align: center; margin-top: 20px;">Made by sleepingalot</h2>
   <p style="text-align: center; font-size: 12px; margin-top: 50px;">Note: Data may be lost when clearing cache or browser history. Using private/incognito mode or switching browsers may not retain data. It is recommended to regularly export your data—just to be safe!</p>
 
-  <script>
-    const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
-    let challenges = JSON.parse(localStorage.getItem('challenges')) || defaultChallenges;
-    let progress = JSON.parse(localStorage.getItem('progress')) || {};
-    let personalBest = JSON.parse(localStorage.getItem('personalBest')) || {};
-    let timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
-
-    function addChallenge() {
-      const newChallenge = document.getElementById('newChallenge').value.trim();
-      if (newChallenge && !challenges.includes(newChallenge)) {
-        challenges.push(newChallenge);
-        localStorage.setItem('challenges', JSON.stringify(challenges));
-        updateDropdown();
-        updateChallengeList();
-        showNotification('Challenge added successfully!');
-      }
-    }
-
-    function deleteChallenge() {
-      const challenge = document.getElementById('challengeSelect').value;
-      challenges = challenges.filter(c => c !== challenge);
-      delete progress[challenge];
-      delete personalBest[challenge];
-      delete timestamps[challenge];
-      localStorage.setItem('challenges', JSON.stringify(challenges));
-      updateDropdown();
-      updateChallengeList();
-      showNotification('Challenge deleted successfully!');
-    }
-
-    function sortByName() {
-      challenges.sort();
-      updateChallengeList();
-    }
-
-    function sortByProgress() {
-      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
-      updateChallengeList();
-    }
-
-    function sortByRecent() {
-      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
-      updateChallengeList();
-    }
-
-    updateDropdown();
-    updateChallengeList();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
