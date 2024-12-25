@@ -77,22 +77,22 @@
   <!-- Enter Progress -->
   <label for="progressInput">Progress:</label>
   <input id="progressInput" type="number" min="1" max="9999" />
-  <button onclick="updateProgress()">Save</button>
-  <button onclick="deleteChallenge()">Delete Challenge / Streak</button>
+  <button onclick="updateProgress()">💾 Save</button>
+  <button onclick="deleteChallenge()">🗑️ Delete Challenge / Streak</button>
 
   <!-- Add New Challenge / Streak -->
   <h2>Add New Challenge / Streak</h2>
   <label for="newChallenge">Name:</label>
   <input id="newChallenge" type="text" />
-  <button onclick="addChallenge()">Add</button>
+  <button onclick="addChallenge()">➕ Add</button>
 
   <!-- Sorted Challenge / Streak List -->
   <h2>Challenge / Streak List</h2>
-  <button onclick="sortByName()">Sort by Name</button>
-  <button onclick="sortByProgress()">Sort by Progress</button>
-  <button onclick="sortByRecent()">Sort by Recent</button>
+  <button onclick="sortByName()">🔤 Sort by Name</button>
+  <button onclick="sortByProgress()">📊 Sort by Progress</button>
+  <button onclick="sortByRecent()">⏱️ Sort by Recent</button>
   <pre id="challengeList"></pre>
-  <button onclick="resetPersonalBest()">Reset all Best Values</button>
+  <button onclick="resetPersonalBest()">🔄 Reset all Best Values</button>
 
   <script>
     // Default challenges
@@ -140,6 +140,24 @@
           : `${challenge}: ${progressValue}`;
       });
       challengeList.textContent = list.join('\n');
+    }
+
+    function deleteChallenge() {
+      const selectedChallenge = challengeSelect.value;
+      const index = challenges.indexOf(selectedChallenge);
+      if (index > -1) {
+        challenges.splice(index, 1);
+        delete progress[selectedChallenge];
+        delete personalBest[selectedChallenge];
+        delete timestamps[selectedChallenge];
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('personalBest', JSON.stringify(personalBest));
+        localStorage.setItem('timestamps', JSON.stringify(timestamps));
+        updateDropdown();
+        updateChallengeList();
+        showNotification(`Challenge '${selectedChallenge}' deleted.`);
+      }
     }
 
     updateDropdown();
