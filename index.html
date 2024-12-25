@@ -50,11 +50,6 @@
       margin: 10px 0;
       color: #00ff00;
     }
-    .export-import {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
   </style>
 </head>
 <body>
@@ -64,12 +59,6 @@
 
   <div id="notification" class="notification"></div>
 
-  <!-- Export/Import Buttons -->
-  <div class="export-import">
-    <button onclick="exportData()">Export Data</button>
-    <button onclick="importData()">Import Data</button>
-  </div>
-
   <!-- Dropdown for Challenges / Streaks -->
   <label for="challengeSelect">Select a Challenge / Streak:</label>
   <select id="challengeSelect"></select>
@@ -77,22 +66,22 @@
   <!-- Enter Progress -->
   <label for="progressInput">Progress:</label>
   <input id="progressInput" type="number" min="1" max="9999" />
-  <button onclick="updateProgress()">💾 Save</button>
-  <button onclick="deleteChallenge()">🗑️ Delete Challenge / Streak</button>
+  <button onclick="delayedAction(updateProgress)">Save</button>
+  <button onclick="delayedAction(deleteChallenge)">Delete Challenge / Streak</button>
 
   <!-- Add New Challenge / Streak -->
   <h2>Add New Challenge / Streak</h2>
   <label for="newChallenge">Name:</label>
   <input id="newChallenge" type="text" />
-  <button onclick="addChallenge()">➕ Add</button>
+  <button onclick="delayedAction(addChallenge)">Add</button>
 
   <!-- Sorted Challenge / Streak List -->
   <h2>Challenge / Streak List</h2>
-  <button onclick="sortByName()">🔤 Sort by Name</button>
-  <button onclick="sortByProgress()">📊 Sort by Progress</button>
-  <button onclick="sortByRecent()">⏱️ Sort by Recent</button>
+  <button onclick="delayedAction(sortByName)">Sort by Name</button>
+  <button onclick="delayedAction(sortByProgress)">Sort by Progress</button>
+  <button onclick="delayedAction(sortByRecent)">Sort by Recent</button>
   <pre id="challengeList"></pre>
-  <button onclick="resetPersonalBest()">🔄 Reset all Best Values</button>
+  <button onclick="delayedAction(resetPersonalBest)">Reset all Best Values</button>
 
   <script>
     // Default challenges
@@ -111,6 +100,10 @@
     function showNotification(message) {
       notification.textContent = message;
       setTimeout(() => notification.textContent = '', 3000);
+    }
+
+    function delayedAction(action) {
+      setTimeout(action, 500);
     }
 
     function updateDropdown() {
@@ -134,7 +127,44 @@
       challengeList.textContent = list.join('\n');
     }
 
-    // Sort Functions
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        updateDropdown();
+        updateChallengeList();
+        showNotification('Challenge added successfully!');
+      }
+    }
+
+    function updateProgress() {
+      const challenge = challengeSelect.value;
+      const value = parseInt(document.getElementById('progressInput').value, 10);
+      if (value >= 1 && value <= 9999) {
+        progress[challenge] = value;
+        personalBest[challenge] = Math.max(personalBest[challenge] || 0, value);
+        timestamps[challenge] = Date.now();
+        localStorage.setItem('progress', JSON.stringify(progress));
+        localStorage.setItem('personalBest', JSON.stringify(personalBest));
+        localStorage.setItem('timestamps', JSON.stringify(timestamps));
+        updateChallengeList();
+        showNotification('Progress updated successfully!');
+      }
+    }
+
+    function deleteChallenge() {
+      const challenge = challengeSelect.value;
+      challenges = challenges.filter(c => c !== challenge);
+      delete progress[challenge];
+      delete personalBest[challenge];
+      delete timestamps[challenge];
+      localStorage.setItem('challenges', JSON.stringify(challenges));
+      updateDropdown();
+      updateChallengeList();
+      showNotification('Challenge deleted successfully!');
+    }
+
     function sortByName() {
       challenges.sort();
       updateChallengeList();
@@ -150,7 +180,6 @@
       updateChallengeList();
     }
 
-    // Reset Best Values
     function resetPersonalBest() {
       Object.keys(personalBest).forEach(key => personalBest[key] = 0);
       localStorage.setItem('personalBest', JSON.stringify(personalBest));
