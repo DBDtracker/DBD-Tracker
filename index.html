@@ -118,54 +118,78 @@
       setTimeout(() => notification.textContent = '', 3000);
     }
 
-    function updateDropdown() {
-      challengeSelect.innerHTML = '';
-      challenges.forEach((challenge) => {
-        const option = document.createElement('option');
-        option.value = challenge;
-        option.textContent = challenge;
-        challengeSelect.appendChild(option);
-      });
-      if (challengeSelect.options.length > 0) {
-        challengeSelect.selectedIndex = 0;
-      }
-    }
-
-    function updateChallengeList() {
-      const list = challenges.map(challenge => {
-        const progressValue = progress[challenge] || 0;
-        const bestValue = personalBest[challenge] || 0;
-        return progressValue > 0
-          ? `${challenge}: ${progressValue}${bestValue > 0 ? ` (Best: ${bestValue})` : ''}`
-          : `${challenge}: ${progressValue}`;
-      });
-      challengeList.textContent = list.join('\n');
-    }
-
-    function addChallenge() {
-      const newChallenge = document.getElementById('newChallenge').value.trim();
-      if (newChallenge && !challenges.includes(newChallenge)) {
-        challenges.push(newChallenge);
-        localStorage.setItem('challenges', JSON.stringify(challenges));
-        updateDropdown();
-        updateChallengeList();
-        showNotification(`Challenge '${newChallenge}' added.`);
-      }
-    }
-
-    function updateProgress() {
+    function deleteChallenge() {
       const selectedChallenge = challengeSelect.value;
-      const value = parseInt(document.getElementById('progressInput').value, 10);
-      if (value >= 1 && value <= 9999) {
-        progress[selectedChallenge] = value;
-        if (!personalBest[selectedChallenge] || value > personalBest[selectedChallenge]) {
-          personalBest[selectedChallenge] = value;
-        }
-        localStorage.setItem('progress', JSON.stringify(progress));
-        localStorage.setItem('personalBest', JSON.stringify(personalBest));
-        updateChallengeList();
-        showNotification(`Progress updated for '${selectedChallenge}' to ${value}.`);
-      }
+      challenges = challenges.filter(challenge => challenge !== selectedChallenge);
+      delete progress[selectedChallenge];
+      delete personalBest[selectedChallenge];
+      delete timestamps[selectedChallenge];
+      localStorage.setItem('challenges', JSON.stringify(challenges));
+      localStorage.setItem('progress', JSON.stringify(progress));
+      localStorage.setItem('personalBest', JSON.stringify(personalBest));
+      localStorage.setItem('timestamps', JSON.stringify(timestamps));
+      updateDropdown();
+      updateChallengeList();
+      showNotification(`Deleted '${selectedChallenge}'.`);
+    }
+
+    function sortByName() {
+      challenges.sort();
+      updateChallengeList();
+    }
+
+    function sortByProgress() {
+      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
+      updateChallengeList();
+    }
+
+    function sortByRecent() {
+      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
+      updateChallengeList();
+    }
+
+    function resetPersonalBest() {
+      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
+      localStorage.setItem('personalBest', JSON.stringify(personalBest));
+      updateChallengeList();
+      showNotification('All best values reset.');
+    }
+
+    function exportData() {
+      const data = {
+        challenges,
+        progress,
+        personalBest,
+        timestamps
+      };
+      const date = new Date();
+      const filename = `dbd_tracker_${date.getDate().toString().padStart(2, '0')}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getFullYear()}.json`;
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      showNotification('Data exported successfully!');
+    }
+
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = event => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = e => {
+          const data = JSON.parse(e.target.result);
+          localStorage.setItem('challenges', JSON.stringify(data.challenges));
+          localStorage.setItem('progress', JSON.stringify(data.progress));
+          localStorage.setItem('personalBest', JSON.stringify(data.personalBest));
+          localStorage.setItem('timestamps', JSON.stringify(data.timestamps));
+          location.reload();
+        };
+        reader.readAsText(file);
+      };
+      input.click();
     }
 
     updateDropdown();
