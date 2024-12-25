@@ -160,11 +160,48 @@
   <p style="text-align: center; font-size: 12px; margin-top: 50px;">Note: Data may be lost when clearing cache or browser history. Using private/incognito mode or switching browsers may not retain data. It is recommended to regularly export your data—just to be safe!</p>
 
   <script>
-    function resetPersonalBest() {
-      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
-      localStorage.setItem('personalBest', JSON.stringify(personalBest));
+    const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
+    let challenges = JSON.parse(localStorage.getItem('challenges')) || defaultChallenges;
+    let progress = JSON.parse(localStorage.getItem('progress')) || {};
+    let personalBest = JSON.parse(localStorage.getItem('personalBest')) || {};
+    let timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
+
+    function addChallenge() {
+      const newChallenge = document.getElementById('newChallenge').value.trim();
+      if (newChallenge && !challenges.includes(newChallenge)) {
+        challenges.push(newChallenge);
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        updateDropdown();
+        updateChallengeList();
+        showNotification('Challenge added successfully!');
+      }
+    }
+
+    function deleteChallenge() {
+      const challenge = document.getElementById('challengeSelect').value;
+      challenges = challenges.filter(c => c !== challenge);
+      delete progress[challenge];
+      delete personalBest[challenge];
+      delete timestamps[challenge];
+      localStorage.setItem('challenges', JSON.stringify(challenges));
+      updateDropdown();
       updateChallengeList();
-      showNotification('All Best Values reset!');
+      showNotification('Challenge deleted successfully!');
+    }
+
+    function sortByName() {
+      challenges.sort();
+      updateChallengeList();
+    }
+
+    function sortByProgress() {
+      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
+      updateChallengeList();
+    }
+
+    function sortByRecent() {
+      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
+      updateChallengeList();
     }
 
     updateDropdown();
