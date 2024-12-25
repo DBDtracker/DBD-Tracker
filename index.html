@@ -44,11 +44,40 @@
       color: #ffffff;
       white-space: pre-wrap;
       border-radius: 5px;
+      box-shadow: 0 0 15px rgba(255, 68, 68, 0.8);
     }
     .notification {
       text-align: center;
       margin: 10px 0;
       color: #00ff00;
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #222;
+      color: #fff;
+      text-align: center;
+      padding: 5px;
+      border-radius: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
     }
   </style>
 </head>
@@ -60,140 +89,48 @@
   <div id="notification" class="notification"></div>
 
   <!-- Dropdown for Challenges / Streaks -->
-  <label for="challengeSelect">Select a Challenge / Streak:</label>
+  <label for="challengeSelect" class="tooltip">Select a Challenge / Streak:
+    <span class="tooltiptext">Choose a challenge to track progress</span>
+  </label>
   <select id="challengeSelect"></select>
 
   <!-- Enter Progress -->
-  <label for="progressInput">Progress:</label>
+  <label for="progressInput" class="tooltip">Progress:
+    <span class="tooltiptext">Enter your current progress for the selected challenge</span>
+  </label>
   <input id="progressInput" type="number" min="1" max="9999" />
-  <button onclick="delayedAction(updateProgress)">Save</button>
-  <button onclick="delayedAction(deleteChallenge)">Delete Challenge / Streak</button>
+  <button onclick="delayedAction(updateProgress)" class="tooltip">Save
+    <span class="tooltiptext">Save progress for the selected challenge</span>
+  </button>
+  <button onclick="delayedAction(deleteChallenge)" class="tooltip">Delete Challenge / Streak
+    <span class="tooltiptext">Remove the selected challenge</span>
+  </button>
 
   <!-- Add New Challenge / Streak -->
   <h2>Add New Challenge / Streak</h2>
-  <label for="newChallenge">Name:</label>
+  <label for="newChallenge" class="tooltip">Name:
+    <span class="tooltiptext">Enter a name for your new challenge</span>
+  </label>
   <input id="newChallenge" type="text" />
-  <button onclick="delayedAction(addChallenge)">Add</button>
+  <button onclick="delayedAction(addChallenge)" class="tooltip">Add
+    <span class="tooltiptext">Add a new challenge</span>
+  </button>
 
   <!-- Sorted Challenge / Streak List -->
   <h2>Challenge / Streak List</h2>
-  <button onclick="delayedAction(sortByName)">Sort by Name</button>
-  <button onclick="delayedAction(sortByProgress)">Sort by Progress</button>
-  <button onclick="delayedAction(sortByRecent)">Sort by Recent</button>
+  <button onclick="delayedAction(sortByName)" class="tooltip">Sort by Name
+    <span class="tooltiptext">Sort the list alphabetically</span>
+  </button>
+  <button onclick="delayedAction(sortByProgress)" class="tooltip">Sort by Progress
+    <span class="tooltiptext">Sort the list by progress values</span>
+  </button>
+  <button onclick="delayedAction(sortByRecent)" class="tooltip">Sort by Recent
+    <span class="tooltiptext">Sort the list by last modified</span>
+  </button>
   <pre id="challengeList"></pre>
-  <button onclick="delayedAction(resetPersonalBest)">Reset all Best Values</button>
-
-  <script>
-    // Default challenges
-    const defaultChallenges = ['Survivor Escape Streak', 'Killer Win Streak', 'Copy Cat Challenge', 'Random Perk Streak', 'Random Killer Streak'];
-
-    // Load data from LocalStorage or initialize with defaults
-    let challenges = JSON.parse(localStorage.getItem('challenges')) || defaultChallenges;
-    let progress = JSON.parse(localStorage.getItem('progress')) || {};
-    let personalBest = JSON.parse(localStorage.getItem('personalBest')) || {};
-    let timestamps = JSON.parse(localStorage.getItem('timestamps')) || {};
-
-    const challengeSelect = document.getElementById('challengeSelect');
-    const challengeList = document.getElementById('challengeList');
-    const notification = document.getElementById('notification');
-
-    function showNotification(message) {
-      notification.textContent = message;
-      setTimeout(() => notification.textContent = '', 3000);
-    }
-
-    function delayedAction(action) {
-      setTimeout(action, 500);
-    }
-
-    function updateDropdown() {
-      if (challenges.length === 0) {
-        challenges = [...defaultChallenges];
-        localStorage.setItem('challenges', JSON.stringify(challenges));
-        showNotification('Default challenges restored!');
-      }
-      challengeSelect.innerHTML = '';
-      challenges.forEach((challenge) => {
-        const option = document.createElement('option');
-        option.value = challenge;
-        option.textContent = challenge;
-        challengeSelect.appendChild(option);
-      });
-    }
-
-    function updateChallengeList() {
-      const list = challenges.map(challenge => {
-        const progressValue = progress[challenge] || 0;
-        const bestValue = personalBest[challenge] || 0;
-        return progressValue > 0
-          ? `${challenge}: ${progressValue}${bestValue > 0 ? ` (Best: ${bestValue})` : ''}`
-          : `${challenge}: ${progressValue}`;
-      });
-      challengeList.textContent = list.join('\n');
-    }
-
-    function addChallenge() {
-      const newChallenge = document.getElementById('newChallenge').value.trim();
-      if (newChallenge && !challenges.includes(newChallenge)) {
-        challenges.push(newChallenge);
-        updateDropdown();
-        updateChallengeList();
-        localStorage.setItem('challenges', JSON.stringify(challenges));
-        showNotification('Challenge added successfully!');
-      }
-    }
-
-    function updateProgress() {
-      const challenge = challengeSelect.value;
-      const value = parseInt(document.getElementById('progressInput').value, 10);
-      if (value >= 1 && value <= 9999) {
-        progress[challenge] = value;
-        personalBest[challenge] = Math.max(personalBest[challenge] || 0, value);
-        timestamps[challenge] = Date.now();
-        localStorage.setItem('progress', JSON.stringify(progress));
-        localStorage.setItem('personalBest', JSON.stringify(personalBest));
-        updateChallengeList();
-        showNotification('Progress updated successfully!');
-      }
-    }
-
-    function deleteChallenge() {
-      const challenge = challengeSelect.value;
-      challenges = challenges.filter(c => c !== challenge);
-      delete progress[challenge];
-      delete personalBest[challenge];
-      delete timestamps[challenge];
-      updateDropdown();
-      updateChallengeList();
-      localStorage.setItem('challenges', JSON.stringify(challenges));
-      showNotification('Challenge deleted successfully!');
-    }
-
-    function sortByName() {
-      challenges.sort();
-      updateChallengeList();
-    }
-
-    function sortByProgress() {
-      challenges.sort((a, b) => (progress[b] || 0) - (progress[a] || 0));
-      updateChallengeList();
-    }
-
-    function sortByRecent() {
-      challenges.sort((a, b) => (timestamps[b] || 0) - (timestamps[a] || 0));
-      updateChallengeList();
-    }
-
-    function resetPersonalBest() {
-      Object.keys(personalBest).forEach(key => personalBest[key] = 0);
-      localStorage.setItem('personalBest', JSON.stringify(personalBest));
-      updateChallengeList();
-      showNotification('All Best Values reset!');
-    }
-
-    updateDropdown();
-    updateChallengeList();
-  </script>
+  <button onclick="delayedAction(resetPersonalBest)" class="tooltip">Reset all Best Values
+    <span class="tooltiptext">Reset all best values to 0</span>
+  </button>
 
   <h2 style="text-align: center; margin-top: 20px;">Made by sleepingalot</h2>
   <p style="text-align: center; font-size: 12px; margin-top: 50px;">Note: Data may be lost when clearing cache or browser history. Using private/incognito mode or switching browsers may not retain data. It is recommended to regularly export your data—just to be safe!</p>
